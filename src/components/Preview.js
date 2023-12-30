@@ -6,7 +6,7 @@ import { selectCameraImage, resetCameraImage } from '../features/cameraSlice';
 import { Close, TextFields, Create, Note, MusicNote, AttachFile, Crop, Timer, Send } from '@mui/icons-material';
 import { v4 as uuid } from 'uuid';
 import { addDoc, collection } from 'firebase/firestore';
-import { uploadString, getDownloadURL, ref, on } from 'firebase/storage';
+import { uploadString, getDownloadURL, ref } from 'firebase/storage';
 import { db, storage, serverTimestamp } from '../components/firebase';
 
 function Preview() {
@@ -30,27 +30,24 @@ function Preview() {
         const storageRef = ref(storage, `posts/${id}`);
         const uploadTask = uploadString(storageRef, cameraImage, "data_url");
 
-        on(uploadTask, 'state_changed',
-            (snapshot) => {
-                // Handle state change (optional)
-            },
-            (error) => {
-                console.error(error);
-            },
-            () => {
-                // Complete function
-                getDownloadURL(storageRef).then((url) => {
-                    addDoc(postRef, {
-                        imageUrl: url,
-                        username: 'KRIS Codes',
-                        read: false,
-                        // profilePic,
-                        timestamp: serverTimestamp(),
-                    });
-                    navigate('/chats', { replace: true });
+        uploadTask.then((snapshot) => {
+            // Handle state change (optional)
+            console.log(snapshot);
+
+            // Complete function
+            getDownloadURL(storageRef).then((url) => {
+                addDoc(postRef, {
+                    imageUrl: url,
+                    username: 'KRIS Codes',
+                    read: false,
+                    // profilePic,
+                    timestamp: serverTimestamp(),
                 });
-            }
-        );
+                navigate('/chats', { replace: true });
+            });
+        }).catch((error) => {
+            console.error(error);
+        });
     };
 
     return (
