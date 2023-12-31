@@ -8,11 +8,13 @@ import { v4 as uuid } from 'uuid';
 import { addDoc, collection } from 'firebase/firestore';
 import { uploadString, getDownloadURL, ref } from 'firebase/storage';
 import { db, storage, serverTimestamp } from '../components/firebase';
+import { selectUser } from '../features/appSlice';
 
 function Preview() {
     const cameraImage = useSelector(selectCameraImage);
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const user = useSelector(selectUser);
 
     useEffect(() => {
         if (!cameraImage) {
@@ -31,16 +33,14 @@ function Preview() {
         const uploadTask = uploadString(storageRef, cameraImage, "data_url");
 
         uploadTask.then((snapshot) => {
-            // Handle state change (optional)
             console.log(snapshot);
 
-            // Complete function
             getDownloadURL(storageRef).then((url) => {
                 addDoc(postRef, {
                     imageUrl: url,
-                    username: 'KRIS Codes',
+                    username: user.username,
                     read: false,
-                    // profilePic,
+                    profilePic: user.profilePic,
                     timestamp: serverTimestamp(),
                 });
                 navigate('/chats', { replace: true });
